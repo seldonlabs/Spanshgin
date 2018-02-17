@@ -8,7 +8,6 @@ import time
 import Tkinter as tk
 import tkFont
 
-# import parse # DEBUG REMOVE
 
 # EDMC imports
 from theme import theme
@@ -65,6 +64,8 @@ NOTES:
 #    dall'inizio
 # 6) controlla URL
 
+DEBUG = False
+
 class SpanshViewer():
 
     def __init__(self, parent):
@@ -81,6 +82,16 @@ class SpanshViewer():
         self.button = None
         self.sem = threading.Semaphore()
 
+    def fetch_data(self, url):
+        if not DEBUG:
+            r = requests.get(url)
+            data = r.json()
+        else:
+            import parse
+            data = parse.data
+
+        return data
+
     def button_callback(self):
         url = self.url.get()
         if url == "":
@@ -91,7 +102,6 @@ class SpanshViewer():
         url = url.replace("plotter", "api")
         print url
 
-        # UNCOMMENT WHEN NOT DEBUGGING
         if not url.startswith("https://spansh.co.uk/api/results/"):
             print "Wrong URL, not spansh!"
             self.show_error("The URL you pasted is not a spansh.co.uk URL."
@@ -99,10 +109,7 @@ class SpanshViewer():
                             " here before pressing the Plot! button")
             return
 
-        r = requests.get(url)
-        data =  r.json()
-
-        # data = parse.data
+        data = self.fetch_data(url)
 
         if ("status" not in data or data['status'] != "ok" or
             "result" not in data or "system_jumps" not in data["result"]):
@@ -306,12 +313,28 @@ class ErrorPopup:
 def send_fake_positions(s):
     time.sleep(10)
     print "aggiorno"
+    s.update_position("Stuelou ER-L d8-145")
+    time.sleep(5)
+    s.update_position("Stuelou MD-I d10-137")
+    time.sleep(5)
+
     s.update_position("Eol Prou OM-V d2-155")
     time.sleep(5)
     s.update_position("Colonia")
 
 if __name__ == "__main__":
-    # DEBUG
+    # launch with PYTHONPATH pointing to the EDMarketconnector dir
+    DEBUG = True
+    theme.current =  {
+        "background"         : "grey4",	# OSX inactive dark titlebar color
+        "foreground"         : "orange",
+        "activebackground"   : "white",
+        "activeforeground"   : "grey4",
+        "disabledforeground" : "grey3",
+        "highlight"          : "grey2",
+        "font"               : "TkDefaultFont",
+    }
+
     app = tk.Tk()
     s = SpanshViewer(app)
     s.start()
