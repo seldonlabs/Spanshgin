@@ -53,8 +53,6 @@ NOTES:
 
 # TODO
 # 7) switcha a logging
-# 8) metti degli switch di debug per disabilitare automaticamente gli import e
-#    le altre cagate di dbg
 
 # DONE
 # 2) mettere un messaggio se il plotting e' stale
@@ -63,6 +61,9 @@ NOTES:
 # 5) quando aggiorna la textarea con qualcosa che e' in fondo la fa ripartire
 #    dall'inizio
 # 6) controlla URL
+# 8) metti degli switch di debug per disabilitare automaticamente gli import e
+#    le altre cagate di dbg
+
 
 DEBUG = False
 
@@ -102,6 +103,9 @@ class SpanshViewer():
         url = url.replace("plotter", "api")
         print url
 
+        if DEBUG:
+            url = "https://spansh.co.uk/api/results/zuppa"
+
         if not url.startswith("https://spansh.co.uk/api/results/"):
             print "Wrong URL, not spansh!"
             self.show_error("The URL you pasted is not a spansh.co.uk URL."
@@ -127,18 +131,19 @@ class SpanshViewer():
 
         # In case the route is plotted while already traveling on it and we are
         # already on a waypoint, update the target
-        if self.current != "":
-            if self.current in self.systems:
-                print "Updating target given current system: %s" % self.current
-                self.set_target_index(self.current)
-            else:
-                self.show_error(("Warning! The current system (%s) is *not* on "
-                                "the route. I copied the first system for you, "
-                                "but make sure you are not already some step "
-                                 "ahead before jumping!") % self.current)
-
         with self.sem:
-            self.arrived = False
+            if self.current != "":
+                if self.current not in self.systems:
+                    print "Current system is not in "
+                    self.show_error(("Warning! The current system (%s) is *not*"
+                                     "on the route. I copied the first system "
+                                     " for you, but make sure you are not "
+                                     "already some step ahead before jumping!")
+                                    % self.current)
+                else:
+                    self.set_target_index(self.current)
+
+            # An update is always needed when reloading a plot
             self.update_needed = True
 
     def show_error(self, text):
@@ -184,7 +189,7 @@ class SpanshViewer():
         try:
             current_idx = self.systems.index(system)
         except ValueError:
-            print "System not found, doing nothing!"
+            print "System %s not found, doing nothing!" % system
             return False
 
         if current_idx < len(self.systems) - 1:
@@ -199,18 +204,18 @@ class SpanshViewer():
         return True
 
     def update_position(self, system):
-        self.current = system
+        with self.sem:
+            print "Updating position to %s" % system
+            self.current = system
 
-        self.sem.acquire()
-        self.update_needed = self.set_target_index(system)
+            self.update_needed = self.set_target_index(system)
 
-        # if an update is not needed, we possibly deviated or relogged in a
-        # system that is not in the route. So it's highly likely the clipboard
-        # has been invalidated, let's copy again the target system
-        if self.update_needed == False and len(self.systems) != 0:
-            pyperclip.copy(self.systems[self.target])
-
-        self.sem.release()
+            # if an update is not needed, we possibly deviated or relogged in a
+            # system that is not in the route. So it's highly likely the
+            # clipboard has been invalidated, let's copy again the target
+            # system
+            if self.update_needed == False and len(self.systems) != 0:
+                pyperclip.copy(self.systems[self.target])
 
     def close(self):
         self.stop = True
@@ -338,6 +343,7 @@ if __name__ == "__main__":
     app = tk.Tk()
     s = SpanshViewer(app)
     s.start()
+    s.update_position("Prua Phoe VD-A d1-1")
     t = threading.Thread(target=send_fake_positions, args=(s, ))
     t.start()
     app.mainloop()
