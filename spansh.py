@@ -1,6 +1,7 @@
 import json
 import os
 import pyperclip
+import re
 import requests
 import threading
 import time
@@ -106,7 +107,8 @@ class SpanshViewer():
         if DEBUG:
             url = "https://spansh.co.uk/api/results/zuppa"
 
-        if not url.startswith("https://spansh.co.uk/api/results/"):
+        # if not url.startswith("https://spansh.co.uk/api/results/"):
+        if not re.match(r"^https://(www\.)?spansh.co.uk/api/results/", url):
             print "Wrong URL, not spansh!"
             self.show_error("The URL you pasted is not a spansh.co.uk URL."
                             " Please copy a plot URL from https://spansh.co.uk"
