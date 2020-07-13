@@ -6,8 +6,8 @@ import requests
 import threading
 import time
 
-import Tkinter as tk
-import tkFont
+import tkinter as tk
+import tkinter.font as tkFont
 
 
 # EDMC imports
@@ -102,14 +102,14 @@ class SpanshViewer():
         # we need to switch from a spansh user-link to an api one
         url = url.split("?")[0]
         url = url.replace("plotter", "api")
-        print url
+        print (url)
 
         if DEBUG:
             url = "https://spansh.co.uk/api/results/zuppa"
 
         # if not url.startswith("https://spansh.co.uk/api/results/"):
         if not re.match(r"^https://(www\.)?spansh.co.uk/api/results/", url):
-            print "Wrong URL, not spansh!"
+            print ("Wrong URL, not spansh!")
             self.show_error("The URL you pasted is not a spansh.co.uk URL."
                             " Please copy a plot URL from https://spansh.co.uk"
                             " here before pressing the Plot! button")
@@ -119,7 +119,7 @@ class SpanshViewer():
 
         if ("status" not in data or data['status'] != "ok" or
             "result" not in data or "system_jumps" not in data["result"]):
-            print "Did not get results!"
+            print ("Did not get results!")
             self.show_error("Failed to get results from the URL you pasted.\n\n"
                             "It's most likely due to an old link, please replot"
                             " the route on https://spansh.co.uk and paste a"
@@ -136,7 +136,7 @@ class SpanshViewer():
         with self.sem:
             if self.current != "":
                 if self.current not in self.systems:
-                    print "Current system is not in "
+                    print ("Current system is not in ")
                     self.show_error(("Warning! The current system (%s) is *not*"
                                      "on the route. I copied the first system "
                                      " for you, but make sure you are not "
@@ -159,7 +159,7 @@ class SpanshViewer():
     def update_starz(self):
         with self.sem:
             if self.update_needed:
-                print "Updating star list"
+                print ("Updating star list")
                 self.starz.configure(state=tk.NORMAL)
                 self.starz.delete(1.0, tk.END)
                 for sys_idx in xrange(len(self.systems)):
@@ -168,7 +168,7 @@ class SpanshViewer():
                         self.starz.tag_add("done", "%s.0" % (sys_idx+1),
                                            "%s.0" % (sys_idx+2))
                     elif sys_idx == self.target:
-                        print "target: %d" % sys_idx
+                        print ("target: %d" % sys_idx)
                         self.starz.tag_add("target", "%s.0" % (sys_idx+1),
                                            "%s.0" % (sys_idx+2))
                         # copy system name to the clipboard
@@ -191,7 +191,7 @@ class SpanshViewer():
         try:
             current_idx = self.systems.index(system)
         except ValueError:
-            print "System %s not found, doing nothing!" % system
+            print ("System %s not found, doing nothing!" % system)
             return False
 
         if current_idx < len(self.systems) - 1:
@@ -201,13 +201,13 @@ class SpanshViewer():
             self.target = current_idx
             self.arrived = True
 
-        print "Set target to %d" % self.target
+        print ("Set target to %d" % self.target)
 
         return True
 
     def update_position(self, system):
         with self.sem:
-            print "Updating position to %s" % system
+            print ("Updating position to %s" % system)
             self.current = system
 
             self.update_needed = self.set_target_index(system)
@@ -222,11 +222,11 @@ class SpanshViewer():
     def close(self):
         self.stop = True
         if self.timer:
-            print "Waiting for timer thread to finish"
+            print ("Waiting for timer thread to finish")
             self.timer.join()
-        print "Done. Destroying window"
+        print ("Done. Destroying window")
         self.app.destroy()
-        print "Done."
+        print ("Done.")
 
     def closed(self):
         return self.stop
@@ -319,7 +319,7 @@ class ErrorPopup:
 
 def send_fake_positions(s):
     time.sleep(10)
-    print "aggiorno"
+    print ("aggiorno")
     s.update_position("Stuelou ER-L d8-145")
     time.sleep(5)
     s.update_position("Stuelou MD-I d10-137")

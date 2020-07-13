@@ -1,6 +1,6 @@
 import sys
 
-import Tkinter as tk
+import tkinter as tk
 
 from spansh import SpanshViewer
 
@@ -16,14 +16,14 @@ this.s = None
 this.parent = None
 this.system = None
 
-def plugin_start():
+def plugin_start3(plugin_dir):
     """
     Load Template plugin into EDMC
     """
 
     # TODO: setup logging
 
-    print "%s loaded!" % PLUGIN_NAME
+    print ("%s loaded!" % PLUGIN_NAME)
 
     return PLUGIN_NAME
 
@@ -31,16 +31,16 @@ def plugin_stop():
     """
     EDMC is closing
     """
-    print "Farewell cruel world!"
+    print ("Farewell cruel world!")
     if this.s:
         this.s.close()
 
 
 def open_spansh():
-    print "Open spansh!"
+    print ("Open spansh!")
     if this.s != None:
         if not this.s.closed():
-            print "Spansh already running"
+            print ("Spansh already running")
             return
         else:
             this.s = None
@@ -49,7 +49,7 @@ def open_spansh():
     this.s.start()
 
     if this.system != None:
-        print "Setting position to: %s" % this.system
+        print ("Setting position to: %s" % this.system)
         this.s.update_position(this.system)
 
 def enterB(event):
@@ -79,7 +79,7 @@ def plugin_app(parent):
 
 
 # Detect journal events
-def journal_entry(cmdr, system, station, entry):
+def dashboard_entry(cmdr, system, station, entry):
     if (entry['event'] == 'Location' or
         entry['event'] == 'FSDJump' or
         entry['event'] == 'StartUp'):
